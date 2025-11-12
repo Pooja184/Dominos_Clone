@@ -1,0 +1,53 @@
+import User from "../models/user.model.js";
+import bcrypt from "bcrypt";
+
+export const registerUser = async (req, res) => {
+  try {
+    const { name, email, password, confirmPassword, role } = req.body;
+
+    
+    if (!name || !email || !password || !confirmPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+
+
+    if (password !== confirmPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Passwords do not match" });
+    }
+
+   
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User already registered" });
+    }
+
+   
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+   
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+    });
+    await newUser.save();
+
+    return res
+      .status(201)
+      .json({ success: true, message: "User registered successfully" });
+  } catch (error) {
+    console.error("❌ Register Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
+  }
+};
