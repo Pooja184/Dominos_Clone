@@ -4,7 +4,7 @@ import api from "../../axios/axiosConfig";
 
 // ✅ Async thunk for registering a user
 export const registerUser = createAsyncThunk(
-  "auth/registerUser",
+  "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
       const response = await api.post(
