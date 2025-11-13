@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { registerUser, resetAuthState } from "../redux/features/registerSlice.js";
+import { toast } from "react-toastify";
 
 const Register = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading, error, success } = useSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -22,8 +27,23 @@ const Register = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // your submit logic here later
+    dispatch(registerUser(userData));
   };
+
+useEffect(() => {
+  if (success) {
+    toast.success("Registration successful!");
+    dispatch(resetAuthState());
+    navigate("/login");
+  } 
+  
+  if (error) {
+    console.log(error)
+    // alert("user aleady exist")
+    toast.error(error);        // show “User already exists”
+    dispatch(resetAuthState()); // ❗ reset so it can show again next time
+  }
+}, [success, error, navigate, dispatch]);
 
   return (
     <div className="min-h-screen flex flex-col font-['Roboto',sans-serif] bg-[#F5EFE6]">
@@ -34,7 +54,7 @@ const Register = () => {
         </p>
       </header>
 
-      {/* Form Section (Compact) */}
+      {/* Form Section */}
       <div className="flex flex-1 justify-center items-center px-4 py-8">
         <form
           onSubmit={handleSubmit}
@@ -149,8 +169,9 @@ const Register = () => {
           <button
             type="submit"
             className="w-full bg-[#e31837] text-white py-2 rounded-md text-sm font-semibold hover:bg-red-700 transition"
+            disabled={loading}
           >
-            Register
+            {loading ? "Registering..." : "Register"}
           </button>
 
           <p className="text-sm text-center mt-3">
